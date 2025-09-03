@@ -1,3 +1,5 @@
+''' Initiates the Emotion Detection Flask app
+'''
 from flask import Flask, render_template, request
 from EmotionDetection.emotion_detection import emotion_detector
 
@@ -6,9 +8,15 @@ app = Flask("Emotion Detection")
 # Routes
 @app.route("/emotionDetector")
 def sent_emotion():
+    ''' Gets text to analyze from front end, and returns formatted output
+    '''
     text_to_analyze = request.args.get("textToAnalyze")
     result = emotion_detector(text_to_analyze)
-    
+
+    # Early error handling
+    if result["dominant_emotion"] is None:
+        return "Invalid text! Please try again!"
+
     # parse result to get just the scores
     result_scores = {}
     for emotion, score in result.items():
@@ -16,7 +24,7 @@ def sent_emotion():
             result_scores[emotion] = score
     first_scores = dict(list(result_scores.items())[:-1])
     last_score = result_scores.popitem()
-    
+
     # strip braces out
     first_scores = str(first_scores)[1:-1]
     last_score = str(last_score)[1:-1]
@@ -32,6 +40,8 @@ def sent_emotion():
 
 @app.route("/")
 def render_index_page():
+    ''' Renders the index
+    '''
     return render_template("index.html")
 
 if __name__ == "__main__":
